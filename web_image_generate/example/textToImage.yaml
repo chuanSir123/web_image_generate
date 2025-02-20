@@ -1,0 +1,116 @@
+name: 文生图
+description: ''
+blocks:
+  - type: internal:text_block
+    name: 4040f648-6082-4a62-8ab1-39230e812836
+    params:
+      text: "Please help me convert this image description to an optimized English prompt.\nDescription: {user_msg}\n\nRequirements:\n1. Output in English\n2. Use detailed and specific words,Include high quality, detailed description, style keywords"
+    position:
+      x: -24
+      y: 275
+    connected_to:
+      - target: e8cae85d-a072-49b7-ab9f-fce7a06160e4
+        mapping:
+          from: text
+          to: user_prompt_format
+  - type: internal:get_message
+    name: 2c59f4e2-6f4f-431b-875f-9ea0337ba949
+    params: {}
+    position:
+      x: -22
+      y: 147
+    connected_to:
+      - target: e8cae85d-a072-49b7-ab9f-fce7a06160e4
+        mapping:
+          from: msg
+          to: user_msg
+  - type: internal:chat_message_constructor
+    name: e8cae85d-a072-49b7-ab9f-fce7a06160e4
+    params: {}
+    position:
+      x: 356
+      y: 142
+    connected_to:
+      - target: 9b7a708d-c87b-4f79-a5b0-25fe710cfbd5
+        mapping:
+          from: llm_msg
+          to: prompt
+  - type: internal:llm_response_to_text
+    name: 6c87ade7-829a-49d5-9542-0b9139c55b8d
+    params: {}
+    position:
+      x: 929
+      y: 143
+    connected_to:
+      - target: 0fae5955-f60e-4e2d-aeb0-b70c4310a907
+        mapping:
+          from: text
+          to: prompt
+  - type: internal:send_message
+    name: 35575732-eab5-477d-99c8-899dc9cb4422
+    params:
+      im_name: ''
+    position:
+      x: 1760
+      y: 150
+  - type: image:image_url_to_imMessage
+    name: 8bf789ab-a7ad-4e29-abf1-ddbc31508543
+    params: {}
+    position:
+      x: 1508
+      y: 146
+    connected_to:
+      - target: 35575732-eab5-477d-99c8-899dc9cb4422
+        mapping:
+          from: msg
+          to: msg
+  - type: internal:text_block
+    name: a8328f51-021f-4be4-87c0-cd3812965c06
+    params:
+      text: ''
+    position:
+      x: -21
+      y: 394
+    connected_to:
+      - target: e8cae85d-a072-49b7-ab9f-fce7a06160e4
+        mapping:
+          from: text
+          to: memory_content
+  - type: internal:text_block
+    name: ace549dd-3dd0-4c6a-bccf-4b5aad93916c
+    params:
+      text: ''
+    position:
+      x: -15
+      y: 518
+    connected_to:
+      - target: e8cae85d-a072-49b7-ab9f-fce7a06160e4
+        mapping:
+          from: text
+          to: system_prompt_format
+  - type: internal:chat_completion
+    name: 9b7a708d-c87b-4f79-a5b0-25fe710cfbd5
+    params:
+      model_name: ''
+    position:
+      x: 580
+      y: 143
+    connected_to:
+      - target: 6c87ade7-829a-49d5-9542-0b9139c55b8d
+        mapping:
+          from: resp
+          to: response
+  - type: image:web_image_generate
+    name: 0fae5955-f60e-4e2d-aeb0-b70c4310a907
+    params:
+      cookie: ''
+      model: flux
+      platform: modelscope
+    position:
+      x: 1168
+      y: 140
+    connected_to:
+      - target: 8bf789ab-a7ad-4e29-abf1-ddbc31508543
+        mapping:
+          from: image_url
+          to: image_url
