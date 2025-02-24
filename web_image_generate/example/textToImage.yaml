@@ -4,7 +4,7 @@ blocks:
   - type: internal:text_block
     name: 4040f648-6082-4a62-8ab1-39230e812836
     params:
-      text: "Please help me convert this image description to an optimized English prompt.\nDescription: {user_msg}\n\nRequirements:\n1. Output in English\n2. Use detailed and specific words,Include high quality, detailed description, style keywords"
+      text: "Please help me convert this image description to an optimized English prompt.\nDescription: {user_msg}\n\nRequirements:\n1. Use detailed and specific words,Include high quality, detailed description, style keywords\n2.不要有任何规则和任务要求输出，请使用英文的自然语言直接输出画图prompt,例如:A medium-height woman with a curvy silhouette stands confidently in a sunlit park. She has warm, olive skin and long, wavy chestnut hair cascading over her shoulders. Her face features soft, almond-shaped brown eyes, a gentle smile, and a sprinkle of freckles across her nose. She wears a casual, oversized green sweater, slightly off the shoulder, paired with light denim shorts that accentuate her hips. The sweater's sleeves are rolled up to her elbows, revealing delicate silver bracelets on her wrists. Her demeanor is relaxed and cheerful, radiating a sense of ease. She leans slightly to one side, one hand resting on her hip while the other playfully tosses her hair back. Surrounding her are lush green trees and a few colorful wildflowers, with sunlight filtering through the leaves, creating a warm and inviting atmosphere."
     position:
       x: -24
       y: 275
