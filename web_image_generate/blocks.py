@@ -1,12 +1,12 @@
 from typing import Any, Dict, List, Optional,Annotated
-from framework.workflow.core.block import Block
-from framework.workflow.core.block.input_output import Input, Output
-from framework.im.message import IMMessage, TextMessage, ImageMessage
-from framework.im.sender import ChatSender
+from kirara_ai.workflow.core.block import Block
+from kirara_ai.workflow.core.block.input_output import Input, Output
+from kirara_ai.im.message import IMMessage, TextMessage, ImageMessage
+from kirara_ai.im.sender import ChatSender
 from .image_generator import WebImageGenerator
 import asyncio
-from framework.logger import get_logger
-from framework.ioc.container import DependencyContainer
+from kirara_ai.logger import get_logger
+from kirara_ai.ioc.container import DependencyContainer
 
 logger = get_logger("ImageGenerator")
 class WebImageGenerateBlock(Block):

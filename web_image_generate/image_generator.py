@@ -4,7 +4,7 @@ import json
 import time
 import asyncio
 from typing import Dict, Any, Optional, Tuple
-from framework.logger import get_logger
+from kirara_ai.logger import get_logger
 
 logger = get_logger("ImageGenerator")
 
