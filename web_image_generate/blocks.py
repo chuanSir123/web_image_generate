@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional,Annotated
-from kirara_ai.workflow.core.block import Block
-from kirara_ai.workflow.core.block.input_output import Input, Output
+from kirara_ai.workflow.core.block import Block, Input, Output, ParamMeta
+
 from kirara_ai.im.message import IMMessage, TextMessage, ImageMessage
 from kirara_ai.im.sender import ChatSender
 from .image_generator import WebImageGenerator
@@ -9,6 +9,10 @@ from kirara_ai.logger import get_logger
 from kirara_ai.ioc.container import DependencyContainer
 
 logger = get_logger("ImageGenerator")
+def get_image_platform_options_provider(container: DependencyContainer, block: Block) -> List[str]:
+    return ["modelscope", "shakker"]
+def get_options_provider(container: DependencyContainer, block: Block) -> List[str]:
+    return ["flux", "ketu", "anime", "photo"]
 class WebImageGenerateBlock(Block):
     """图片生成Block"""
     name = "image_generate"
@@ -32,8 +36,8 @@ class WebImageGenerateBlock(Block):
     def __init__(
         self,
         name: str = None,
-        platform: str = "modelscope",
-        model: str = "flux",
+        platform: Annotated[Optional[str],ParamMeta(label="平台", description="要使用的画图平台", options_provider=get_image_platform_options_provider),] = "modelscope",
+        model: Annotated[Optional[str],ParamMeta(label="平台", description="要使用的画图平台", options_provider=get_options_provider),] = "flux",
         cookie: str = ""
     ):
         super().__init__(name)
