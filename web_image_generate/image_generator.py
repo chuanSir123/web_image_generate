@@ -246,6 +246,18 @@ class WebImageGenerator:
 
     async def generate_image(self, platform: str, model: str, prompt: str, width: int, height: int) -> str:
         """统一的图片生成入口"""
+        if "-ketu" in prompt and platform == "modelscope":
+            prompt = prompt.replace("-ketu","")
+            model = "ketu"
+        elif "-flux" in prompt  and platform == "modelscope":
+            prompt = prompt.replace("-flux","")
+            model = "flux"
+        elif "-anime" in prompt and platform == "shakker":
+            prompt = prompt.replace("-anime","")
+            model = "anime"
+        elif "-photo" in prompt and platform == "shakker":
+            prompt = prompt.replace("-photo","")
+            model = "photo"
         if platform == "modelscope":
             if not self.cookie:
                return "请前往https://modelscope.cn/登录后获取token(按F12-应用-cookie中的m_session_id)";
