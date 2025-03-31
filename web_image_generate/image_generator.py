@@ -45,6 +45,16 @@ class WebImageGenerator:
             return token_data["Data"]["Token"]
 
     async def generate_modelscope(self, model: str, prompt: str, width: int, height: int) -> str:
+        aspect_ratio = width / height
+        # 确保宽度和高度的最小值至少是1024
+        if min(height, width) < 1024:
+            if height < width:
+                height = 1024
+                width = (int(height * aspect_ratio/64))*64
+            else:
+                width = 1024
+                height = (int(width / aspect_ratio/64))*64
+
         """使用ModelScope模型生成图片"""
         if model not in self.MODELSCOPE_MODELS:
             raise ValueError(f"Unsupported ModelScope model: {model}")

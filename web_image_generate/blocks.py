@@ -85,8 +85,8 @@ class WebImageGenerateBlock(Block):
 
     def execute(self, **kwargs) -> Dict[str, Any]:
         prompt = kwargs.get("prompt", "")
-        width = int(kwargs.get("width", 1024))
-        height = int(kwargs.get("height", 1024))
+        width = int(kwargs.get("width") or 1024)
+        height = int(kwargs.get("height") or 1024)
         cookie_input = kwargs.get("cookie", "")
 
         # 如果传入了cookie，优先使用传入的cookie
@@ -101,9 +101,9 @@ class WebImageGenerateBlock(Block):
         # 如果cookie仍然为空，返回平台特定的提示信息
         if not self.cookie:
             if self.platform == "modelscope":
-                return {"image_url": "请前往https://modelscope.cn/登录后获取token(按F12-应用-cookie中的m_session_id)"}
+                return {"image_url": "生成图片失败，请提醒用户前往https://modelscope.cn/登录后获取token并发送(按F12-应用-cookie中的m_session_id)"}
             elif self.platform == "shakker":
-                return {"image_url": "请前往https://www.shakker.ai/登录后获取token(按F12-应用-cookie中的usertoken)"}
+                return {"image_url": "生成图片失败，请提醒用户前往https://www.shakker.ai/登录后获取token并发送(按F12-应用-cookie中的usertoken)"}
 
         # 根据平台格式化cookie
         if self.platform == "modelscope" and not self.cookie.startswith("m_session_id="):
