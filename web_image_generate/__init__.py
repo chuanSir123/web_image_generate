@@ -7,7 +7,7 @@ from kirara_ai.ioc.inject import Inject
 from kirara_ai.ioc.container import DependencyContainer
 from kirara_ai.workflow.core.workflow.builder import WorkflowBuilder
 from kirara_ai.workflow.core.workflow.registry import WorkflowRegistry
-from .blocks import WebImageGenerateBlock,ImageUrlToIMMessage
+from .blocks import WebImageGenerateBlock,ImageUrlToIMMessage,ImageToVideoGenerateBlock,TextToMusicGenerateBlock
 logger = get_logger("WebImageGenerate")
 import importlib.resources
 import os
@@ -27,6 +27,8 @@ class WebImageGeneratePlugin(Plugin):
         try:
             self.block_registry.register("web_image_generate", "image", WebImageGenerateBlock)
             self.block_registry.register("image_url_to_imMessage", "image", ImageUrlToIMMessage)
+            self.block_registry.register("image_to_video", "video", ImageToVideoGenerateBlock)
+            self.block_registry.register("text_to_music", "music", TextToMusicGenerateBlock)
         except Exception as e:
             logger.warning(f"ImageGeneratePlugin failed: {e}")
 

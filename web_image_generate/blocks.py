@@ -135,7 +135,103 @@ class WebImageGenerateBlock(Block):
             return {"image_url": image_url}
         except Exception as e:
             return {"image_url": f"生成失败: {str(e)}"}
+class ImageToVideoGenerateBlock(Block):
+    """图生视频生成Block"""
+    name = "image_to_video"
+    description = "图生视频，通过英文提示词和图片生成视频"
 
+    inputs = {
+        "prompt": Input(name="prompt", label="提示词", data_type=str, description="英文提示词"),
+        "image_url": Input(name="image_url", label="图片url", data_type=str, description="图片url"),
+        "second": Input(name="second", label="视频时长", data_type=int, description="视频时长", nullable=True, default=4),
+        "cookie": Input(name="cookie", label="cookie", data_type=str, description="魔搭平台的cookie", nullable=True)
+    }
+
+    outputs = {
+        "video_url": Output(name="video_url", label="视频URL", data_type=str, description="生成的视频URL")
+    }
+
+    def __init__(
+        self,
+        name: str = None,
+        cookie: str = ""
+    ):
+        super().__init__(name)
+
+
+        self.cookie = cookie
+        self.generator = WebImageGenerator()
+        self.config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+
+    def _load_config(self):
+        """从配置文件加载cookie"""
+        try:
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f) or {}
+                    return config.get('cookies', {})
+            return {}
+        except Exception as e:
+            logger.error(f"加载配置文件失败: {str(e)}")
+            return {}
+
+    def _save_config(self, cookies):
+        """保存cookie到配置文件"""
+        try:
+            config = {'cookies': cookies}
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                yaml.dump(config, f, allow_unicode=True)
+        except Exception as e:
+            logger.error(f"保存配置文件失败: {str(e)}")
+
+    def execute(self, **kwargs) -> Dict[str, Any]:
+        image_url = kwargs.get("image_url", "")
+        prompt = kwargs.get("prompt", "")
+        second = int(kwargs.get("second") or 4)
+        cookie_input = kwargs.get("cookie", "")
+
+        # 如果传入了cookie，优先使用传入的cookie
+        if cookie_input:
+            self.cookie = cookie_input
+
+        # 如果cookie为空，从配置文件加载
+        if not self.cookie:
+            cookies = self._load_config()
+            self.cookie = cookies.get("modelscope", "")
+
+        # 如果cookie仍然为空，返回平台特定的提示信息
+        if not self.cookie:
+            return {"video_url": "生成视频失败，请提醒用户前往https://modelscope.cn/登录后获取token并发送(按F12-应用-cookie中的m_session_id)"}
+
+
+        # 根据平台格式化cookie
+        if not self.cookie.startswith("m_session_id="):
+            self.cookie = "m_session_id=" + self.cookie
+
+        try:
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            self.generator.cookie = self.cookie
+            video_url = loop.run_until_complete(
+                self.generator.generate_imageToVideo(
+                    image_url=image_url,
+                    prompt=prompt,
+                    second=second
+                )
+            )
+
+            # 生成成功后，保存cookie到配置文件
+            if video_url:
+                cookies = self._load_config()
+                cookies["modelscope"] = self.cookie
+                self._save_config(cookies)
+
+            return {"video_url": video_url}
+        except Exception as e:
+            return {"video_url": f"生成失败: {str(e)}"}
 class ImageUrlToIMMessage(Block):
     """纯文本转 IMMessage"""
 
@@ -154,3 +250,86 @@ class ImageUrlToIMMessage(Block):
             return {"msg": IMMessage(sender=ChatSender.get_bot_sender(), message_elements=[ImageMessage(line) for line in image_url.split(self.split_by)])}
         else:
             return {"msg": IMMessage(sender=ChatSender.get_bot_sender(), message_elements=[ImageMessage(image_url)])}
+
+class TextToMusicGenerateBlock(Block):
+    """文生音乐生成Block"""
+    name = "text_to_music"
+    description = "文生音乐（生成歌曲），通过时长、歌词和风格生成音乐"
+
+    inputs = {
+        "lyrics": Input(name="lyrics", label="歌词", data_type=str, description="歌词内容,示例如下:[verse]\nNeon lights they flicker bright\nCity hums in dead of night\nRhythms pulse through concrete veins\nLost in echoes of refrains\n[verse]\nBassline groovin' in my chest\nHeartbeats match the city's zest\nElectric whispers fill the air\nSynthesized dreams everywhere\n[chorus]\nTurn it up and let it flow\nFeel the fire let it grow\nIn this rhythm we belong\nHear the night sing out our song\n[verse]\nGuitar strings they start to weep\nWake the soul from silent sleep\nEvery note a story told\nIn this night we’re bold and gold[bridge]\nVoices blend in harmony\nLost in pure cacophony\nTimeless echoes timeless cries\nSoulful shouts beneath the skies\n[verse]\nKeyboard dances on the keys\nMelodies on evening breeze\nCatch the tune and hold it tight\nIn this moment we take flight"),
+        "style": Input(name="style", label="风格", data_type=str, description="音乐风格，示例如下:rock, hip - hop, orchestral, bass, drums, electric guitar, piano, synthesizer, violin, viola, cello, fast, energetic, motivational, inspirational, empowering", nullable=True,default="rock, hip - hop, orchestral, bass, drums, electric guitar, piano, synthesizer, violin, viola, cello, fast, energetic, motivational, inspirational, empowering"),
+    }
+
+    outputs = {
+        "music_url": Output(name="music_url", label="音乐URL", data_type=str, description="生成的音乐URL")
+    }
+
+    def __init__(self, name: str = None, cookie: str = ""):
+        super().__init__(name)
+        self.cookie = cookie
+        self.generator = WebImageGenerator()
+        self.config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+
+    def _load_config(self):
+        try:
+            if os.path.exists(self.config_path):
+                with open(self.config_path, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f) or {}
+                    return config.get('cookies', {})
+            return {}
+        except Exception as e:
+            logger.error(f"加载配置文件失败: {str(e)}")
+            return {}
+
+    def _save_config(self, cookies):
+        try:
+            config = {'cookies': cookies}
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                yaml.dump(config, f, allow_unicode=True)
+        except Exception as e:
+            logger.error(f"保存配置文件失败: {str(e)}")
+
+    def execute(self, **kwargs) -> Dict[str, Any]:
+        import asyncio
+        duration = -1
+        lyrics = kwargs.get("lyrics", "")
+        style = kwargs.get("style", "")
+        cookie_input = kwargs.get("cookie", "")
+
+        # 如果传入了cookie，优先使用传入的cookie
+        if cookie_input:
+            self.cookie = cookie_input
+
+        # 如果cookie为空，从配置文件加载
+        if not self.cookie:
+            cookies = self._load_config()
+            self.cookie = cookies.get("modelscope", "")
+
+        # 如果cookie仍然为空，返回平台特定的提示信息
+        if not self.cookie:
+            return {"music_url": "生成音乐失败，请提醒用户前往https://modelscope.cn/登录后获取token并发送(按F12-应用-cookie中的m_session_id)"}
+
+        # 根据平台格式化cookie
+        if not self.cookie.startswith("m_session_id="):
+            self.cookie = "m_session_id=" + self.cookie
+
+        self.generator.cookie = self.cookie
+        try:
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            url = loop.run_until_complete(self.generator.generate_music(duration, lyrics, style))
+            # 生成成功后，保存cookie到配置文件
+            if url and url.startswith("http"):
+                cookies = self._load_config()
+                cookies["modelscope"] = self.cookie
+                self._save_config(cookies)
+            if url:
+                return {"music_url": url,"lyrics":lyrics}
+            else:
+                return {"music_url": "生成失败，未获取到音乐URL"}
+        except Exception as e:
+            return {"music_url": f"生成失败: {str(e)}"}
